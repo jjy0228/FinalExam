@@ -1,4 +1,4 @@
-﻿#pragma comment(lib, "Opengl32.lib")
+#pragma comment(lib, "Opengl32.lib")
 
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
@@ -36,8 +36,16 @@ int Initialize()
     return 0;
 }
 
-int Update()
+int Update(EnemyBlock obstacles[], int obstacleCount, float speed)
 {
+    for (int i = 0; i < obstacleCount; ++i) {
+        obstacles[i].posX -= speed;
+
+        // 장애물이 화면 왼쪽 끝을 벗어나면 재활용하여 오른쪽 끝에 다시 배치
+        if (obstacles[i].posX < -1.0f) {
+            obstacles[i].posX = 1.0f + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 2.0f));
+        }
+    }
     return 0;
 }
 
@@ -88,23 +96,24 @@ int main(void)
     Floor floor;
 
     // 장애물 생성
-    const int obstacleCount = 4;
+    const int obstacleCount = 3;
     EnemyBlock obstacles[obstacleCount] = {
-        EnemyBlock(0.5f, 1.0f, -0.5f, -0.9f), // 낮은 장애물 1
-        EnemyBlock(0.5f, 1.0f, 0.5f, -0.9f),  // 낮은 장애물 2
-        EnemyBlock(0.5f, 3.0f, -0.25f, -0.9f), // 높은 장애물 1
-        EnemyBlock(0.5f, 3.0f, 0.25f, -0.9f)  // 높은 장애물 2
+        EnemyBlock(0.5f, 1.0f, 0.5f, -0.9f),  // 낮은 장애물
+        EnemyBlock(0.5f, 1.5f, 1.5f, -0.9f), // 중간 높이 장애물
+        EnemyBlock(0.5f, 2.0f, 2.5f, -0.9f)  // 높은 장애물
     };
+
+    float obstacleSpeed = 0.01f;
 
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
         Physics();
-        Update();
+        Update(obstacles, obstacleCount, obstacleSpeed);
         Render(player, floor, obstacles, obstacleCount);
         glfwSwapBuffers(window);
     }
 
     glfwTerminate();
-    return 0;
+    return -1;
 }
