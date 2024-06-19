@@ -1,95 +1,74 @@
 #pragma once
-
 #include <GLFW/glfw3.h>
+#include "Transform.h"
 
+// Base class
 class Object {
 public:
-    virtual void OnCollisionEnter(Object& other) = 0;
-    virtual void Render() = 0;
+    virtual void OnCollisionEnter(Object& other) {}
+    virtual void Render() const {}
+    virtual float GetX() const { return 0; }
+    virtual float GetY() const { return 0; }
+    virtual float GetWidth() const { return 0; }
+    virtual float GetHeight() const { return 0; }
 };
 
+// Derived classes
 class Player : public Object {
 public:
-    void OnCollisionEnter(Object& other) override {
-    }
+    Player();
+    void OnCollisionEnter(Object& other) override {}
+    void Render() const override;
+    void Update(float deltaTime);
+    void Jump(float power);
+    void SetJumping(bool jumping) { isJumping = jumping; }
+    bool IsJumping() const { return isJumping; }
+    float GetX() const override { return position.x; }
+    float GetY() const override { return posY; }
+    float GetWidth() const override { return size; }
+    float GetHeight() const override { return size; }
 
-    void Render() override {
-        float size = 50.0f / 100.0f; // 50cm¸¦ ¹ÌÅÍ ´ÜÀ§·Î º¯È¯
-        float borderSize = 3.0f / 100.0f; // 3cm¸¦ ¹ÌÅÍ ´ÜÀ§·Î º¯È¯
+    float velocityY; // ì í”„ ì†ë„
+    float posY; // ìœ„ì¹˜
+    float rotation; // íšŒì „ ê°ë„
+    bool isJumping; // ì í”„ ìƒíƒœ
 
-        // Å×µÎ¸® (°ËÀº»ö)
-        glColor3f(0.0f, 0.0f, 0.0f);
-        glBegin(GL_QUADS);
-        glVertex2f(-size / 2, -size / 2);
-        glVertex2f(size / 2, -size / 2);
-        glVertex2f(size / 2, size / 2);
-        glVertex2f(-size / 2, size / 2);
-        glEnd();
-
-        // ³»ºÎ Á¤»ç°¢Çü (»¡°£»ö)
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glBegin(GL_QUADS);
-        glVertex2f(-size / 2 + borderSize, -size / 2 + borderSize);
-        glVertex2f(size / 2 - borderSize, -size / 2 + borderSize);
-        glVertex2f(size / 2 - borderSize, size / 2 - borderSize);
-        glVertex2f(-size / 2 + borderSize, size / 2 - borderSize);
-        glEnd();
-    }
+private:
+    float size; // 50cm í•œ ë³€
+    float borderThickness; // 3cm í…Œë‘ë¦¬ ë‘ê»˜
+    float color[3]; // ë¹¨ê°•ìƒ‰ (R:255, G:0, B:0)
+    float borderColor[3]; // í…Œë‘ë¦¬ ìƒ‰ (ê²€ì •ìƒ‰)
+    float gravity; // ì¤‘ë ¥
+    float jumpForce; // ì í”„ë ¥
+    Transform::Vertex position; // ìœ„ì¹˜
 };
 
 class EnemyBlock : public Object {
 public:
+    EnemyBlock(float x, float y, float width, float height);
+    void OnCollisionEnter(Object& other) override {}
+    void Render() const override;
+    float GetX() const override { return position.x; }
+    float GetY() const override { return position.y; }
+    float GetWidth() const override { return width; }
+    float GetHeight() const override { return height; }
+
+    Transform::Vertex position;
+
+private:
     float width;
     float height;
-    float posX;
-    float posY;
-
-    EnemyBlock(float w, float h, float x, float y)
-        : width(w), height(h), posX(x), posY(y) {}
-
-    void OnCollisionEnter(Object& other) override {
-    }
-
-    void Render() override {
-        // Àå¾Ö¹° (³ì»ö)
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glBegin(GL_QUADS);
-        glVertex2f(posX - width / 2, posY);
-        glVertex2f(posX + width / 2, posY);
-        glVertex2f(posX + width / 2, posY + height);
-        glVertex2f(posX - width / 2, posY + height);
-        glEnd();
-    }
+    float color[3]; // ë…¹ìƒ‰ (R:0, G:255, B:0)
 };
 
 class Floor : public Object {
 public:
-    void OnCollisionEnter(Object& other) override {
-    }
-
-    void Render() override {
-        float floorHeight = 0.1f; // ¹Ù´Ú ³ôÀÌ (1m)
-
-        glColor3f(1.0f, 0.78f, 0.058f); // È²»ö (RGB: 255, 200, 15)
-        glBegin(GL_QUADS);
-        glVertex2f(-1.0f, -1.0f);
-        glVertex2f(1.0f, -1.0f);
-        glVertex2f(1.0f, -1.0f + floorHeight);
-        glVertex2f(-1.0f, -1.0f + floorHeight);
-        glEnd();
-    }
+    void OnCollisionEnter(Object& other) override {}
 };
 
 class Star : public Object {
 public:
-    void OnCollisionEnter(Object& other) override {
-    }
-
-    void Render() override {
-    }
+    void OnCollisionEnter(Object& other) override {}
 };
 
-int PhysicsAABB(Object& A, Object& B)
-{
-    return 0;
-}
+bool PhysicsAABB(Object& A, Object& B);
